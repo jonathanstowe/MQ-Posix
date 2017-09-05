@@ -17,14 +17,47 @@ class MQ::Posix {
 
 
     class Attr is repr('CStruct') {
-        has __syscall_slong_t           $.mq_flags; 
+        has __syscall_slong_t           $.mq_flags;
         has __syscall_slong_t           $.mq_maxmsg;
-        has __syscall_slong_t           $.mq_msgsize; 
+        has __syscall_slong_t           $.mq_msgsize;
         has __syscall_slong_t           $.mq_curmsgs;
-        has __syscall_slong_t           $.__pad_1; 
-        has __syscall_slong_t           $.__pad_2; 
-        has __syscall_slong_t           $.__pad_3; 
-        has __syscall_slong_t           $.__pad_4; 
+        has __syscall_slong_t           $.__pad_1;
+        has __syscall_slong_t           $.__pad_2;
+        has __syscall_slong_t           $.__pad_3;
+        has __syscall_slong_t           $.__pad_4;
+    }
+
+    has Str $.name is required;
+    has Bool $.create;
+    has Bool $.read;
+    has Bool $.write;
+
+    has Int  $!open-flags;
+
+    method open-flags(--> Int) {
+        if !$!open-flags.defined {
+            $!open-flags = do if $!read && $!write {
+                ReadWrite;
+            }
+            elsif $!read {
+                ReadOnly;
+            }
+            elsif $!write {
+                WriteOnly;
+            }
+
+            if $!create {
+                $!open-flags =+| Create;
+            }
+
+        }
+        $!open-flags;
+    }
+
+    has mqd_t $!queue-descriptor;
+
+    method queue-descriptor(--> mqd_t) {
+        $!queue-descriptor //= mq_open($!name, $.open-flags, 0o664, Attr);
     }
 
 # == /usr/include/mqueue.h ==

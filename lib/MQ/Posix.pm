@@ -14,6 +14,10 @@ class MQ::Posix {
     constant ReadWrite  = 2;
 
     constant Create     = 64;
+    constant Exclusive  = 128;
+
+
+    has mqd_t $!handle;
 
 
     class Attr is repr('CStruct') {
@@ -73,6 +77,27 @@ class MQ::Posix {
 #extern mqd_t mq_open (const char *__name, int __oflag, ...)
 
     sub mq_open(Str $name, int32 $oflag, int32 $mode, Attr $attr) is native(LIB) returns mqd_t  { * }
+
+    submethod BUILD(Str :$name!, Bool :$r, Bool :$w, Bool :$create, Bool :$exclusive) {
+        my $oflag;
+        if $r && $w {
+            $oflag = ReadWrite;
+        }
+        elsif $w {
+            $oflag = WriteOnly;
+        }
+        else {
+            $oflag = ReadOnly;
+        }
+
+        if $create {
+            $oflag +|= Create;
+        }
+
+        if $exclusive {
+            $oflag +|= Exclusive;
+        }
+    }
 
 #-From /usr/include/mqueue.h:45
 #/* Removes the association between message queue descriptor MQDES and its

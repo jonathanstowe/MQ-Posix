@@ -4,8 +4,8 @@ use NativeCall;
 
 class MQ::Posix {
 
-    constant __syscall_slong_t = int64;
-    constant mqd_t   = int32;
+    constant __syscall_slong_t  = int64;
+    constant mqd_t              = int32;
 
     constant LIB = [ 'rt', v1 ];
 
@@ -15,9 +15,6 @@ class MQ::Posix {
 
     constant Create     = 64;
     constant Exclusive  = 128;
-
-
-    has mqd_t $!handle;
 
 
     class Attr is repr('CStruct') {
@@ -32,31 +29,8 @@ class MQ::Posix {
     }
 
     has Str $.name is required;
-    has Bool $.create;
-    has Bool $.read;
-    has Bool $.write;
-
     has Int  $!open-flags;
 
-    method open-flags(--> Int) {
-        if !$!open-flags.defined {
-            $!open-flags = do if $!read && $!write {
-                ReadWrite;
-            }
-            elsif $!read {
-                ReadOnly;
-            }
-            elsif $!write {
-                WriteOnly;
-            }
-
-            if $!create {
-                $!open-flags =+| Create;
-            }
-
-        }
-        $!open-flags;
-    }
 
     has mqd_t $!queue-descriptor;
 
@@ -78,24 +52,23 @@ class MQ::Posix {
 
     sub mq_open(Str $name, int32 $oflag, int32 $mode, Attr $attr) is native(LIB) returns mqd_t  { * }
 
-    submethod BUILD(Str :$name!, Bool :$r, Bool :$w, Bool :$create, Bool :$exclusive) {
-        my $oflag;
-        if $r && $w {
-            $oflag = ReadWrite;
+    submethod BUILD(Str :$!name!, Bool :$r, Bool :$w, Bool :$create, Bool :$exclusive) {
+        $!open-flags = do if $r && $w {
+            ReadWrite;
         }
         elsif $w {
-            $oflag = WriteOnly;
+            WriteOnly;
         }
         else {
-            $oflag = ReadOnly;
+            ReadOnly;
         }
 
         if $create {
-            $oflag +|= Create;
+            $!open-flags +|= Create;
         }
 
         if $exclusive {
-            $oflag +|= Exclusive;
+            $!open-flags +|= Exclusive;
         }
     }
 

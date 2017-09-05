@@ -79,6 +79,14 @@ class MQ::Posix {
 
     sub mq_close(mqd_t $mqdes ) is native(LIB) returns int32 { * }
 
+    method close( --> Bool) {
+        my Bool $rc = True;
+        if $!queue-descriptor.defined {
+            $rc = !mq_close($!queue-descriptor);
+        }
+        $rc;
+    }
+
 #-From /usr/include/mqueue.h:48
 #/* Query status and attributes of message queue MQDES.  */
 #extern int mq_getattr (mqd_t __mqdes, struct Attr *__mqstat)

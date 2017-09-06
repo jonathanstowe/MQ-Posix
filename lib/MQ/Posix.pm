@@ -112,6 +112,10 @@ class MQ::Posix {
 
     sub mq_setattr(mqd_t $mqdes, Attr $mqstat, Attr $omqstat) is native(LIB) returns int32 { * }
 
+    method set-attributes(Attr:D $mqstat --> Bool) {
+        !mq_setattr(self.queue-descriptor, $mqstat);
+    }
+
 #-From /usr/include/mqueue.h:59
 #/* Remove message queue named NAME.  */
 #extern int mq_unlink (const char *__name) __THROW __nonnull ((1));

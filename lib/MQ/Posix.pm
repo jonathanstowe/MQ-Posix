@@ -1,4 +1,4 @@
-use v6.*;
+use v6.c;
 
 use NativeCall;
 
@@ -18,24 +18,28 @@ class MQ::Posix {
 
 
     class Attr is repr('CStruct') {
-        has __syscall_slong_t           $.mq_flags;
-        has __syscall_slong_t           $.mq_maxmsg;
-        has __syscall_slong_t           $.mq_msgsize;
-        has __syscall_slong_t           $.mq_curmsgs;
-        has __syscall_slong_t           $.__pad_1;
-        has __syscall_slong_t           $.__pad_2;
-        has __syscall_slong_t           $.__pad_3;
-        has __syscall_slong_t           $.__pad_4;
+        has __syscall_slong_t           $.flags;
+        has __syscall_slong_t           $.maxmsg;
+        has __syscall_slong_t           $.msgsize;
+        has __syscall_slong_t           $.curmsgs;
+        has __syscall_slong_t           $!__pad_1;
+        has __syscall_slong_t           $!__pad_2;
+        has __syscall_slong_t           $!__pad_3;
+        has __syscall_slong_t           $!__pad_4;
     }
 
     has Str $.name is required;
     has Int  $!open-flags;
 
 
-    has mqd_t $!queue-descriptor;
+    has Int $!queue-descriptor;
+
+    my $errno := cglobal(Str, 'errno', int32);
+
+    sub mq_open(Str $name, int32 $oflag, int32 $mode, Attr $attr) is native(LIB) returns mqd_t  { * }
 
     method queue-descriptor(--> mqd_t) {
-        $!queue-descriptor //= mq_open($!name, $.open-flags, 0o664, Attr);
+        $!queue-descriptor //= mq_open($!name, $!open-flags, 0o660, Attr);
     }
 
 # == /usr/include/mqueue.h ==
@@ -50,9 +54,11 @@ class MQ::Posix {
 #   used.  */
 #extern mqd_t mq_open (const char *__name, int __oflag, ...)
 
-    sub mq_open(Str $name, int32 $oflag, int32 $mode, Attr $attr) is native(LIB) returns mqd_t  { * }
 
     submethod BUILD(Str :$!name!, Bool :$r, Bool :$w, Bool :$create, Bool :$exclusive) {
+        if !$!name.starts-with('/') {
+            $!name = '/' ~ $!name;
+        }
         $!open-flags = do if $r && $w {
             ReadWrite;
         }
@@ -91,7 +97,13 @@ class MQ::Posix {
 #/* Query status and attributes of message queue MQDES.  */
 #extern int mq_getattr (mqd_t __mqdes, struct Attr *__mqstat)
 
-    sub mq_getattr(mqd_t $mqdes, Attr $mqstat ) is native(LIB) returns int32  { * }
+    sub mq_getattr(mqd_t $mqdes, Attr $mqstat is rw) is native(LIB) returns int32  { * }
+
+    method get-attributes(--> Attr) {
+        my $attrs = Attr.new;
+        mq_getattr(self.queue-descriptor, $attrs);
+        $attrs;
+    }
 
 #-From /usr/include/mqueue.h:53
 #/* Set attributes associated with message queue MQDES and if OMQSTAT is
@@ -105,6 +117,10 @@ class MQ::Posix {
 #extern int mq_unlink (const char *__name) __THROW __nonnull ((1));
 
     sub mq_unlink(Str $name ) is native(LIB) returns int32 { * }
+
+    method unlink(--> Bool) {
+        !mq_unlink($!name);
+    }
 
 #`(
 #-From /usr/include/mqueue.h:63

@@ -1,6 +1,7 @@
 use v6.c;
 
 use NativeCall;
+use NativeHelpers::Array;
 
 class MQ::Posix {
 
@@ -19,9 +20,9 @@ class MQ::Posix {
 
     class Attr is repr('CStruct') {
         has __syscall_slong_t           $.flags;
-        has __syscall_slong_t           $.maxmsg;
-        has __syscall_slong_t           $.msgsize;
-        has __syscall_slong_t           $.curmsgs;
+        has __syscall_slong_t           $.max-messages;
+        has __syscall_slong_t           $.message-size;
+        has __syscall_slong_t           $.current-messages;
         has __syscall_slong_t           $!__pad_1;
         has __syscall_slong_t           $!__pad_2;
         has __syscall_slong_t           $!__pad_3;
@@ -31,6 +32,11 @@ class MQ::Posix {
     has Str $.name is required;
     has Int  $!open-flags;
 
+    has Int $.max-messages;
+    has Int $.message-size;
+
+    has Int $.mode;
+
 
     has Int $!queue-descriptor;
 
@@ -38,8 +44,14 @@ class MQ::Posix {
 
     sub mq_open(Str $name, int32 $oflag, int32 $mode, Attr $attr) is native(LIB) returns mqd_t  { * }
 
+    
     method queue-descriptor(--> mqd_t) {
-        $!queue-descriptor //= mq_open($!name, $!open-flags, 0o660, Attr);
+        my Attr $attr;
+
+        if ( $!open-flags & Create ) && ( $!message-size || $!max-messages ) {
+            $attr = Attr.new(message-size => $!message-size || 8192, max-messages => $!max-messages || 10);
+        }
+        $!queue-descriptor //= mq_open($!name, $!open-flags, $!mode, $attr);
     }
 
 # == /usr/include/mqueue.h ==
@@ -55,7 +67,7 @@ class MQ::Posix {
 #extern mqd_t mq_open (const char *__name, int __oflag, ...)
 
 
-    submethod BUILD(Str :$!name!, Bool :$r, Bool :$w, Bool :$create, Bool :$exclusive) {
+    submethod BUILD(Str :$!name!, Bool :$r, Bool :$w, Bool :$create, Bool :$exclusive, Int :$!max-messages, Int :$!message-size, Int :$!mode = 0o660) {
         if !$!name.starts-with('/') {
             $!name = '/' ~ $!name;
         }
@@ -71,11 +83,11 @@ class MQ::Posix {
 
         if $create {
             $!open-flags +|= Create;
+            if $exclusive {
+                $!open-flags +|= Exclusive;
+            }
         }
 
-        if $exclusive {
-            $!open-flags +|= Exclusive;
-        }
     }
 
 #-From /usr/include/mqueue.h:45

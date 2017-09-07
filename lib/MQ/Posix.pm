@@ -112,8 +112,16 @@ class MQ::Posix {
 
     sub mq_setattr(mqd_t $mqdes, Attr $mqstat, Attr $omqstat) is native(LIB) returns int32 { * }
 
-    method set-attributes(Attr:D $mqstat --> Bool) {
-        !mq_setattr(self.queue-descriptor, $mqstat);
+
+    proto method set-attributes(|c) { * }
+
+    multi method set-attributes(:$maxmsg!, :$msgsize! --> Bool ) {
+        self.set-attributes(Attr.new(:$maxmsg, :$msgsize));
+    }
+
+    multi method set-attributes(Attr:D $mqstat --> Bool) {
+        my $rc = mq_setattr(self.queue-descriptor, $mqstat, Attr);
+        !$rc;
     }
 
 #-From /usr/include/mqueue.h:59

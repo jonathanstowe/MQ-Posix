@@ -8,7 +8,7 @@ Perl 6 binding for POSIX message queues
 
 use MQ::Posix;
 
-my $queue = MQ::Posix.new(name => 'test-queue', :create, :read);
+my $queue = MQ::Posix.new(name => 'test-queue', :create, :r, :w);
 
 
 ```
@@ -16,7 +16,15 @@ my $queue = MQ::Posix.new(name => 'test-queue', :create, :read);
 ## Description
 
 POSIX message queues offer a mechanism for processes to reliably exchange
-data in the form of messages.
+data in the form of messages
+
+The messages are presented as a priority ordered queue with higher priority
+messages being delivered first and messages of equal priority being delivered
+in age order.
+
+The mechanism is simple, having no provision for message metadata and so forth
+and whilst reliable, unread messages do not persist beyond the lifetime of the
+running kernel.
 
 ## Install
 

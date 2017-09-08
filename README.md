@@ -39,8 +39,18 @@ install this with *zef* :
 
 ## Support
 
-If this doesn't work as expected or you have new features that you would like
-to see please post in https://github.com/jonathanstowe/MQ-Posix/issues
+This should work on any operating system that has good modern POSIX
+support, however some systems may not enable kernel message queues by
+the default and you may need some kernel build configuration to do so.
+Also the limits and defaults for number of messages and maximum message
+sizes are set in different ways as this is not explicitly stated in the
+standard, on Linux, for example, you can use the ```sysctl``` interface
+to control these parameters, on other systems you may need to supply
+them as kernel build configuration.
+
+If this doesn't work as expected or you have new
+features that you would like to see please post in
+https://github.com/jonathanstowe/MQ-Posix/issues
 
 ## Licence & Copyright
 

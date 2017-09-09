@@ -8,8 +8,26 @@ Perl 6 binding for POSIX message queues
 
 use MQ::Posix;
 
-my $queue = MQ::Posix.new(name => 'test-queue', :create, :r, :w);
+my $queue = MQ::Posix.new(name => 'test-queue', :create, :r );
 
+react {
+    whenever $queue.Supply -> $buf {
+        say $buf.encode;
+    }
+}
+```
+
+And in some separate process:
+
+```perl6
+
+use MQ::Posix;
+
+my $queue = MQ::Posix.new(name => 'test-queue', :create, :w );
+
+await $queue.write("some test message, priority => 10);
+
+$queue.close;
 
 ```
 

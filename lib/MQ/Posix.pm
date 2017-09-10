@@ -18,6 +18,24 @@ class MQ::Posix {
     constant Exclusive  = 128;
 
 
+    class X::MQ is Exception {
+        has Int $.errno is required;
+
+        method message( --> Str) {
+            self!strerror;
+        }
+
+        sub strerror_r(int32, CArray $buf is rw, size_t $buflen --> int32) is native { * }
+
+        method !strerror(--> Str) {
+            my $array = CArray[uint8].new((0) xx 256);
+            strerror_r($!errno, $array, 256);
+            my $buff = copy-carray-to-buf($array, 256);
+            $buff.decode;
+
+        }
+    }
+
     class Attr is repr('CStruct') {
         has __syscall_slong_t           $.flags;
         has __syscall_slong_t           $.max-messages;
@@ -44,7 +62,7 @@ class MQ::Posix {
 
     sub mq_open(Str $name, int32 $oflag, int32 $mode, Attr $attr) is native(LIB) returns mqd_t  { * }
 
-    
+
     method queue-descriptor(--> mqd_t) {
         my Attr $attr;
 

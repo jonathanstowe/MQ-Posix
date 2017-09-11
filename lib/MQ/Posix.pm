@@ -69,7 +69,13 @@ class MQ::Posix {
         if ( $!open-flags & Create ) && ( $!message-size || $!max-messages ) {
             $attr = Attr.new(message-size => $!message-size || 8192, max-messages => $!max-messages || 10);
         }
-        $!queue-descriptor //= mq_open($!name, $!open-flags, $!mode, $attr);
+        $!queue-descriptor //= do {
+            my $fd = mq_open($!name, $!open-flags, $!mode, $attr);
+            if $fd < 0 {
+                X::MQ.new(:$errno).throw;
+            }
+            $fd;
+        }
     }
 
 # == /usr/include/mqueue.h ==

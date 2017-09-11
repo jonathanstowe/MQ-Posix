@@ -36,6 +36,9 @@ class MQ::Posix {
         }
     }
 
+    class X::MQ::Open is X::MQ {
+    }
+
     class Attr is repr('CStruct') {
         has __syscall_slong_t           $.flags;
         has __syscall_slong_t           $.max-messages;
@@ -55,6 +58,8 @@ class MQ::Posix {
 
     has Int $.mode;
 
+    has Attr $.attributes;
+
 
     has Int $!queue-descriptor;
 
@@ -72,7 +77,7 @@ class MQ::Posix {
         $!queue-descriptor //= do {
             my $fd = mq_open($!name, $!open-flags, $!mode, $attr);
             if $fd < 0 {
-                X::MQ.new(:$errno).throw;
+                X::MQ::Open.new(:$errno).throw;
             }
             $fd;
         }
@@ -119,12 +124,17 @@ class MQ::Posix {
 #   message queue.  */
 #extern int mq_close (mqd_t __mqdes) __THROW;
 
+    class X::MQ::Close is X::MQ {
+    }
+
     sub mq_close(mqd_t $mqdes ) is native(LIB) returns int32 { * }
 
     method close( --> Bool) {
         my Bool $rc = True;
         if $!queue-descriptor.defined {
-            $rc = !mq_close($!queue-descriptor);
+            if mq_close($!queue-descriptor) < 0 {
+                X::MQ::Close.new(:$errno).throw;
+            }
         }
         $rc;
     }
@@ -133,12 +143,19 @@ class MQ::Posix {
 #/* Query status and attributes of message queue MQDES.  */
 #extern int mq_getattr (mqd_t __mqdes, struct Attr *__mqstat)
 
+    class X::MQ::Attributes is X::MQ {
+    }
+
     sub mq_getattr(mqd_t $mqdes, Attr $mqstat is rw) is native(LIB) returns int32  { * }
 
-    method get-attributes(--> Attr) {
-        my $attrs = Attr.new;
-        mq_getattr(self.queue-descriptor, $attrs);
-        $attrs;
+    method attributes(--> Attr) {
+        $!attributes //= do {
+            my $attrs = Attr.new;
+            if mq_getattr(self.queue-descriptor, $attrs) < 0 {
+                X::MQ::Attributes.new(:$errno).throw;
+            }
+            $attrs;
+        }
     }
 
 #-From /usr/include/mqueue.h:53
@@ -164,10 +181,16 @@ class MQ::Posix {
 #/* Remove message queue named NAME.  */
 #extern int mq_unlink (const char *__name) __THROW __nonnull ((1));
 
+    class X::MQ::Unlink is X::MQ {
+    }
+
     sub mq_unlink(Str $name ) is native(LIB) returns int32 { * }
 
     method unlink(--> Bool) {
-        !mq_unlink($!name);
+        if mq_unlink($!name) < 0 {
+            X::MQ::Unlink.new(:$errno).throw;
+        }
+        True;
     }
 
 #`(

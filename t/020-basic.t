@@ -15,7 +15,7 @@ isa-ok $obj, MQ::Posix;
 
 my $attrs;
 
-lives-ok { $attrs = $obj.get-attributes }, "get-attributes";
+lives-ok { $attrs = $obj.attributes }, "get attributes";
 isa-ok $attrs, 'MQ::Posix::Attr';
 
 is $attrs.max-messages, 10 ,  "got maxmsg";

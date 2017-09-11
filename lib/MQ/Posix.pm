@@ -190,13 +190,13 @@ sub mq_notify(mqd_t                         $__mqdes # Typedef<mqd_t>->|int|
 #   MQDES.  */
 #extern ssize_t mq_receive (mqd_t __mqdes, char *__msg_ptr, size_t __msg_len,
 
-    sub mq_receive(mqd_t $mqdes, Str $msg_ptr, size_t $msg_len, Pointer[uint32] $msg_prio) is native(LIB) returns ssize_t { * }
+    sub mq_receive(mqd_t $mqdes, CArray[uint8] $msg_ptr, size_t $msg_len, Pointer[uint32] $msg_prio) is native(LIB) returns ssize_t { * }
 
 #-From /usr/include/mqueue.h:72
 #/* Add message pointed by MSG_PTR to message queue MQDES.  */
 #extern int mq_send (mqd_t __mqdes, const char *__msg_ptr, size_t __msg_len,
 
-    sub mq_send(mqd_t $mqdes, Str $msg_ptr, size_t  $msg_len, uint32 $msg_prio ) is native(LIB) returns int32  { * }
+    sub mq_send(mqd_t $mqdes, CArray[uint8] $msg_ptr, size_t  $msg_len, uint32 $msg_prio ) is native(LIB) returns int32  { * }
 
 }
 

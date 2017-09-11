@@ -158,24 +158,6 @@ class MQ::Posix {
         }
     }
 
-#-From /usr/include/mqueue.h:53
-#/* Set attributes associated with message queue MQDES and if OMQSTAT is
-#   not NULL also query its old attributes.  */
-#extern int mq_setattr (mqd_t __mqdes,
-
-    sub mq_setattr(mqd_t $mqdes, Attr $mqstat, Attr $omqstat) is native(LIB) returns int32 { * }
-
-
-    proto method set-attributes(|c) { * }
-
-    multi method set-attributes(:$maxmsg!, :$msgsize! --> Bool ) {
-        self.set-attributes(Attr.new(:$maxmsg, :$msgsize));
-    }
-
-    multi method set-attributes(Attr:D $mqstat --> Bool) {
-        my $rc = mq_setattr(self.queue-descriptor, $mqstat, Attr);
-        !$rc;
-    }
 
 #-From /usr/include/mqueue.h:59
 #/* Remove message queue named NAME.  */

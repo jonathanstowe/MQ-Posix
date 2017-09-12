@@ -21,10 +21,6 @@ isa-ok $attrs, 'MQ::Posix::Attr';
 is $attrs.max-messages, 10 ,  "got maxmsg";
 is $attrs.message-size, 4096, "got msgsize";
 
-diag $attrs.perl;
-
-
-
 lives-ok { $obj.close }, "close";
 lives-ok { $obj.unlink } , "unlink";
 

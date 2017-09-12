@@ -190,14 +190,56 @@ sub mq_notify(mqd_t                         $__mqdes # Typedef<mqd_t>->|int|
 #   MQDES.  */
 #extern ssize_t mq_receive (mqd_t __mqdes, char *__msg_ptr, size_t __msg_len,
 
-    sub mq_receive(mqd_t $mqdes, CArray[uint8] $msg_ptr, size_t $msg_len, Pointer[uint32] $msg_prio) is native(LIB) returns ssize_t { * }
+    class X::MQ::Receive is X::MQ {
+    }
+
+    sub mq_receive(mqd_t $mqdes, CArray[uint8] $msg_ptr is rw, size_t $msg_len, Pointer[uint32] $msg_prio) is native(LIB) returns ssize_t { * }
+
+    method receive(--> Promise ) {
+        start {
+            my Int $msg-size = $.attributes.message-size;
+            my CArray $buf = CArray[uint8].new((8) xx $msg-size);
+            my $rc = mq_receive($.queue-descriptor, $buf, $msg-size, Pointer[uint32]);
+
+            if $rc < 0 {
+                X::MQ::Receive.new(:$errno).throw;
+            }
+            else {
+                copy-carray-to-buf($buf, $rc);
+            }
+        }
+    }
 
 #-From /usr/include/mqueue.h:72
 #/* Add message pointed by MSG_PTR to message queue MQDES.  */
 #extern int mq_send (mqd_t __mqdes, const char *__msg_ptr, size_t __msg_len,
 
+    class X::MQ::Send is X::MQ {
+    }
+
     sub mq_send(mqd_t $mqdes, CArray[uint8] $msg_ptr, size_t  $msg_len, uint32 $msg_prio ) is native(LIB) returns int32  { * }
 
+    proto method send(|c) { * }
+
+    multi method send(Str $msg, Int $priority = 0 --> Promise) {
+        self.send($msg.encode, $priority);
+    }
+
+    multi method send(Buf $msg, Int $priority = 0 --> Promise) {
+        my CArray $carray = copy-buf-to-carray($msg);
+        self.send($carray, $msg.elems, $priority);
+    }
+
+    multi method send(CArray $msg, Int $length, Int $priority = 0 --> Promise) {
+        start {
+            if mq_send($.queue-descriptor, $msg, $length, $priority ) < 0 {
+                X::MQ::Send.new(:$errno).throw;
+            }
+            else {
+                True;
+            }
+        }
+    }
 }
 
 # vim: expandtab shiftwidth=4 ft=perl6

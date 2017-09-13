@@ -22,15 +22,15 @@ class MQ::Posix {
         has Int $.errno is required;
 
         method message( --> Str) {
-            self!strerror;
+            self!strerror ~ " ({ $!errno })";
         }
 
-        sub strerror_r(int32, CArray $buf is rw, size_t $buflen --> int32) is native { * }
+        sub strerror_r(int32, CArray $buf is rw, size_t $buflen --> CArray) is native { * }
 
         method !strerror(--> Str) {
             my $array = CArray[uint8].new((0) xx 256);
-            strerror_r($!errno, $array, 256);
-            my $buff = copy-carray-to-buf($array, 256);
+            my $out = strerror_r($!errno, $array, 256);
+            my $buff = copy-carray-to-buf($out, 256);
             $buff.decode;
 
         }
@@ -222,7 +222,7 @@ sub mq_notify(mqd_t                         $__mqdes # Typedef<mqd_t>->|int|
     proto method send(|c) { * }
 
     multi method send(Str $msg, Int $priority = 0 --> Promise) {
-        self.send($msg.encode, $priority);
+        self.send(Buf.new($msg.encode.list), $priority);
     }
 
     multi method send(Buf $msg, Int $priority = 0 --> Promise) {
@@ -232,7 +232,7 @@ sub mq_notify(mqd_t                         $__mqdes # Typedef<mqd_t>->|int|
 
     multi method send(CArray $msg, Int $length, Int $priority = 0 --> Promise) {
         start {
-            if mq_send($.queue-descriptor, $msg, $length, $priority ) < 0 {
+            if mq_send(self.queue-descriptor, $msg, $length, $priority ) < 0 {
                 X::MQ::Send.new(:$errno).throw;
             }
             else {

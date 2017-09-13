@@ -63,6 +63,8 @@ class MQ::Posix {
 
     has Int $!queue-descriptor;
 
+    has Promise $!open-promise;
+
     my $errno := cglobal(Str, 'errno', int32);
 
     sub mq_open(Str $name, int32 $oflag, int32 $mode, Attr $attr) is native(LIB) returns mqd_t  { * }
@@ -75,12 +77,22 @@ class MQ::Posix {
             $attr = Attr.new(message-size => $!message-size || 8192, max-messages => $!max-messages || 10);
         }
         $!queue-descriptor //= do {
+
             my $fd = mq_open($!name, $!open-flags, $!mode, $attr);
             if $fd < 0 {
                 X::MQ::Open.new(:$errno).throw;
             }
+            $!open-promise = Promise.new;
             $fd;
         }
+    }
+
+    method r(--> Bool) {
+        ?($!open-flags +& ( ReadOnly | ReadWrite));
+    }
+
+    method w(--> Bool) {
+        ?($!open-flags +& ( WriteOnly | ReadWrite));
     }
 
 # == /usr/include/mqueue.h ==
@@ -135,6 +147,7 @@ class MQ::Posix {
             if mq_close($!queue-descriptor) < 0 {
                 X::MQ::Close.new(:$errno).throw;
             }
+            $!open-promise.keep: True;
         }
         $rc;
     }

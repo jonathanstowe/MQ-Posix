@@ -1,14 +1,111 @@
 use v6.c;
 
+=begin pod
+
+=head1 NAME
+
+MQ::Posix - Perl 6 interface for POSIX message queues
+
+=head1 SYNOPSIS
+
+=begin code
+
+use MQ::Posix;
+
+my $queue = MQ::Posix.new(name => 'test-queue', :create, :r );
+
+react {
+    whenever $queue.Supply -> $buf {
+        say $buf.decode;
+    }
+    whenever signal(SIGINT) {
+        $queue.close;
+        $queue.unlink;
+        done;
+    }
+}
+=end code
+
+And in some separate process:
+
+=begin code
+
+use MQ::Posix;
+
+my $queue = MQ::Posix.new(name => 'test-queue', :create, :w );
+
+await $queue.send("some test message", priority => 10);
+
+$queue.close;
+
+=end code
+
+=head1 DESCRIPTION
+
+POSIX message queues offer a mechanism for processes to reliably exchange
+data in the form of messages
+
+The messages are presented as a priority ordered queue with higher priority
+messages being delivered first and messages of equal priority being delivered
+in age order.
+
+The mechanism is simple, having no provision for message metadata and so forth
+and whilst reliable, unread messages do not persist beyond the lifetime of the
+running kernel.
+
+=head1 METHODS
+
+=head2 method new
+
+    method new(Str :$name!, Bool :$r, Bool :$w, Bool :$create, Bool :$exclusive, Int :$max-messages, Int :$message-size, Int :$mode = 0o660)
+
+The constructor of the class, C<$name> is the name of the queue and is required,
+there may be different constraints on the name in different implementations but
+in both B<Linux> and B<FreeBSD> it must conform to the requirements of a
+filename.  On or both of C<r> or C<w> must be provided to indicate whether
+the queue should be readable, writable or both.  If C<create> is supplied
+the queue will be created if necessary, otherwise if the queue doesn't
+exist an exception will be thrown.  If C<exclusive> is supplied along with
+C<create> an exception will be thrown if the queue already exists. C<$mode>
+will be used as the mode of the queue if the queue is to be created, after
+the application of the user file creation mask in effect.
+
+C<$max-messages> and C<$message-size> will be used to set the queues attributes
+if it is created if provided, otherwise the system defaults will be used.
+The system defaults may differ from system to system. If the user is not
+privileged and the values are higher than the configured limits then an
+exception may be thrown when the queue is created - how to determine the
+limits may differ from system to system, on Linux they can be obtained
+and set through a C<sysctl> interface (or via C</proc/sys/fs/mqueue/> )
+
+The queue itself may not be created immediately but rather when it first
+needs to be used, so any exception may not be thrown at the time the
+constructor is called.
+
+=head2 method attributes
+
+    method attributes(--> MQ::Posix::Attr)
+
+This returns an object describing the queue's attributes, they can't
+be changed after the queue is created.  The object has the
+attributes C<message-size> which is the maximum size of a message
+
+
+
+
+
+
+=end pod
+
 use NativeCall;
 use NativeHelpers::Array;
 
 class MQ::Posix {
 
-    constant __syscall_slong_t  = int64;
-    constant mqd_t              = int32;
+    my constant __syscall_slong_t  = int64;
+    my constant mqd_t              = int32;
 
-    constant LIB = [ 'rt', v1 ];
+    my constant LIB = [ 'rt', v1 ];
 
     constant ReadOnly   = 0;
     constant WriteOnly  = 1;

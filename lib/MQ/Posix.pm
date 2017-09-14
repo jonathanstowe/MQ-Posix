@@ -87,13 +87,66 @@ constructor is called.
     method attributes(--> MQ::Posix::Attr)
 
 This returns an object describing the queue's attributes, they can't
-be changed after the queue is created.  The object has the
-attributes C<message-size> which is the maximum size of a message
+be changed after the queue is created.  The object has the attributes
+C<message-size> which is the allowed maximum size of a message,
+C<max-messages> is the maximum number of messages allowed in the queue
+simulataneously and C<current-messages> the number of messages in
+the queue.
 
+=head2 method send
 
+    multi method send(Str $msg, Int $priority = 0 --> Promise)
+    multi method send(Buf $msg, Int $priority = 0 --> Promise)
+    multi method send(CArray $msg, Int $length, Int $priority = 0 --> Promise)
 
+If the queue is opened for writing this will send the supplied message
+with the specified priority, returning a Promise that will be kept
+when the message is placed on the queue (as it may block if there are
+C<max-messages> alreadt on the queue.) The Promise will be broken with
+an exception if the queue is not opened for writing or if the message is
+longer than C<message-size>.
 
+=head2 method receive
 
+    method receive(--> Promise )
+
+This returns a Promise that will be kept with the highest priority
+message from the queue as a L<Buf> (you are free to decode or
+marshal this as you wish as there is no mechanism to convey the
+encoding.)  it will be broken with an exception if the queue wasn't
+opened for reading. The message will never exceed C<message-size> bytes.
+
+=head2 method Supply
+
+    method Supply(--> Supply)
+
+This provides a Supply onto which are emitted the messages as a L<Buf>
+as they arrive on the queue.  An exception will be thrown if the queue
+isn't opened for reading. The first time this is called a new thread
+will be started to feed the supply which will run until the queue is
+closed.
+
+In places which expect a Supply such as a C<whenever> this need not
+be explicitly called and the object can be coerced instead,
+
+=head2 method close
+
+    method close( --> Bool)
+
+This closes the queue handle that will have been opened if the queue
+was written to or read, after this has been called an exception
+will be thrown if attempting to read or write. If C<Supply> was
+called the thread it started will finish.
+
+=head2 method unlink
+
+    method unlink( --> Bool)
+
+This will remove the queue and it will no longer be able to be opened
+by another process, any process that currently has it opened will still
+be able to use it, and the queue will be removed when the last opener
+closes it. An exception will be thrown if the queue was already removed
+or if the effective user doesn't have permission.
 
 =end pod
 

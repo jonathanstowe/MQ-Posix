@@ -258,6 +258,28 @@ sub mq_notify(mqd_t                         $__mqdes # Typedef<mqd_t>->|int|
             }
         }
     }
+
+    has Supplier $!supplier;
+    has Supply   $.Supply;
+
+    has Promise  $!supply-promise;
+
+
+    method Supply(--> Supply) {
+        $!Supply //= do {
+            if !$!open-promise.defined {
+                sink self.queue-descriptor;
+            }
+            $!supplier = Supplier.new;
+            $!supply-promise = start {
+                while $!open-promise.status ~~ Planned {
+                    $!supplier.emit: await self.receive;
+                }
+                $!supplier.done;
+            }
+            $!supplier.Supply;
+        }
+    }
 }
 
 # vim: expandtab shiftwidth=4 ft=perl6

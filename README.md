@@ -12,7 +12,12 @@ my $queue = MQ::Posix.new(name => 'test-queue', :create, :r );
 
 react {
     whenever $queue.Supply -> $buf {
-        say $buf.encode;
+        say $buf.decode;
+    }
+    whenever signal(SIGINT) {
+        $queue.close;
+        $queue.unlink;
+        done;
     }
 }
 ```
@@ -25,7 +30,7 @@ use MQ::Posix;
 
 my $queue = MQ::Posix.new(name => 'test-queue', :create, :w );
 
-await $queue.write("some test message, priority => 10);
+await $queue.send("some test message", priority => 10);
 
 $queue.close;
 

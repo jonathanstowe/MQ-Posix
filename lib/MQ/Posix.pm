@@ -17,12 +17,17 @@ class MQ::Posix {
     constant Create     = 64;
     constant Exclusive  = 128;
 
-
     class X::MQ is Exception {
+        has Str $.message;
+    }
+
+    class X::MQ::System is X::MQ {
         has Int $.errno is required;
 
+        has Str $!message;
+
         method message( --> Str) {
-            self!strerror ~ " ({ $!errno })";
+            $!message //= self!strerror ~ " ({ $!errno })";
         }
 
         sub strerror_r(int32, CArray $buf is rw, size_t $buflen --> CArray) is native { * }
@@ -36,7 +41,7 @@ class MQ::Posix {
         }
     }
 
-    class X::MQ::Open is X::MQ {
+    class X::MQ::Open is X::MQ::System {
     }
 
     class Attr is repr('CStruct') {
@@ -136,7 +141,7 @@ class MQ::Posix {
 #   message queue.  */
 #extern int mq_close (mqd_t __mqdes) __THROW;
 
-    class X::MQ::Close is X::MQ {
+    class X::MQ::Close is X::MQ::System {
     }
 
     sub mq_close(mqd_t $mqdes ) is native(LIB) returns int32 { * }
@@ -156,7 +161,7 @@ class MQ::Posix {
 #/* Query status and attributes of message queue MQDES.  */
 #extern int mq_getattr (mqd_t __mqdes, struct Attr *__mqstat)
 
-    class X::MQ::Attributes is X::MQ {
+    class X::MQ::Attributes is X::MQ::System {
     }
 
     sub mq_getattr(mqd_t $mqdes, Attr $mqstat is rw) is native(LIB) returns int32  { * }
@@ -176,7 +181,7 @@ class MQ::Posix {
 #/* Remove message queue named NAME.  */
 #extern int mq_unlink (const char *__name) __THROW __nonnull ((1));
 
-    class X::MQ::Unlink is X::MQ {
+    class X::MQ::Unlink is X::MQ::System {
     }
 
     sub mq_unlink(Str $name ) is native(LIB) returns int32 { * }
@@ -203,7 +208,7 @@ sub mq_notify(mqd_t                         $__mqdes # Typedef<mqd_t>->|int|
 #   MQDES.  */
 #extern ssize_t mq_receive (mqd_t __mqdes, char *__msg_ptr, size_t __msg_len,
 
-    class X::MQ::Receive is X::MQ {
+    class X::MQ::Receive is X::MQ::System {
     }
 
     sub mq_receive(mqd_t $mqdes, CArray[uint8] $msg_ptr is rw, size_t $msg_len, Pointer[uint32] $msg_prio) is native(LIB) returns ssize_t { * }
@@ -227,7 +232,7 @@ sub mq_notify(mqd_t                         $__mqdes # Typedef<mqd_t>->|int|
 #/* Add message pointed by MSG_PTR to message queue MQDES.  */
 #extern int mq_send (mqd_t __mqdes, const char *__msg_ptr, size_t __msg_len,
 
-    class X::MQ::Send is X::MQ {
+    class X::MQ::Send is X::MQ::System {
     }
 
     sub mq_send(mqd_t $mqdes, CArray[uint8] $msg_ptr, size_t  $msg_len, uint32 $msg_prio ) is native(LIB) returns int32  { * }

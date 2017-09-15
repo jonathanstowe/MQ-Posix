@@ -2,6 +2,8 @@
 
 Perl 6 binding for POSIX message queues
 
+[![Build Status](https://travis-ci.org/jonathanstowe/MQ-Posix.svg?branch=master)](https://travis-ci.org/jonathanstowe/MQ-Posix)
+
 ## Synopsis
 
 ```perl6

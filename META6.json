@@ -5,7 +5,7 @@
     "source": "https://github.com/jonathanstowe/MQ-Posix.git",
     "bugtracker" : "https://github.com/jonathanstowe/MQ-Posix/issues"
   },
-  "perl": "6.c",
+  "perl": "6.*",
   "resources": [
   ],
   "build-depends": [

@@ -1,6 +1,6 @@
 {
   "name": "MQ::Posix",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "auth": "github:jonathanstowe",
   "api": "1.0",
   "description": "binding for POSIX message queues",
@@ -10,6 +10,7 @@
     "bugtracker" : "https://github.com/jonathanstowe/MQ-Posix/issues"
   },
   "perl": "6.*",
+  "raku": "6.*",
   "resources": [
   ],
   "build-depends": [
@@ -29,7 +30,7 @@
   "provides": {
       "MQ::Posix" : "lib/MQ/Posix.pm"
   },
-  "meta-version": "0",
+  "meta-version": "1",
   "authors": [
       "Jonathan Stowe <jns+gh@gellyfish.co.uk>"
   ]

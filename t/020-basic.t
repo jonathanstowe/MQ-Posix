@@ -1,4 +1,4 @@
-#!perl6
+#!raku
 
 use v6;
 use Test;
@@ -25,4 +25,4 @@ lives-ok { $obj.close }, "close";
 lives-ok { $obj.unlink } , "unlink";
 
 done-testing;
-# vim: ft=perl6 ts=4 sw=4 expandtab
+# vim: ft=raku ts=4 sw=4 expandtab

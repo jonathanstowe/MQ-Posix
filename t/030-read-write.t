@@ -1,4 +1,4 @@
-#!perl6
+#!raku
 
 use v6;
 use Test;
@@ -26,4 +26,4 @@ lives-ok {
 lives-ok { $writer.close }, "close";
 
 done-testing;
-# vim: ft=perl6 ts=4 sw=4 expandtab
+# vim: ft=raku ts=4 sw=4 expandtab

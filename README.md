@@ -1,12 +1,12 @@
 # MQ::Posix
 
-Perl 6 binding for POSIX message queues
+Raku binding for POSIX message queues
 
-[![Build Status](https://travis-ci.org/jonathanstowe/MQ-Posix.svg?branch=master)](https://travis-ci.org/jonathanstowe/MQ-Posix)
+![Build Status](https://github.com/jonathanstowe/MQ-Posix/workflows/CI/badge.svg)
 
 ## Synopsis
 
-```perl6
+```raku
 
 use MQ::Posix;
 
@@ -26,7 +26,7 @@ react {
 
 And in some separate process:
 
-```perl6
+```raku
 
 use MQ::Posix;
 
@@ -53,8 +53,7 @@ running kernel.
 
 ## Install
 
-If you have a working installation of Rakudo Perl 6 you should be able to
-install this with *zef* :
+If you have a working installation of Rakudo you should be able to install this with *zef* :
 
     zef install MQ::Posix
 
@@ -73,13 +72,11 @@ standard, on Linux, for example, you can use the ```sysctl``` interface
 to control these parameters, on other systems you may need to supply
 them as kernel build configuration.
 
-If this doesn't work as expected or you have new
-features that you would like to see please post in
-https://github.com/jonathanstowe/MQ-Posix/issues
+If this doesn't work as expected or you have new features that you would like to see please post in https://github.com/jonathanstowe/MQ-Posix/issues
 
 ## Licence & Copyright
 
 This is free software, please see the [LICENCE](LICENCE) for details.
 
-© Jonathan Stowe 2017, 2019
+© Jonathan Stowe 2017 - 2021
 

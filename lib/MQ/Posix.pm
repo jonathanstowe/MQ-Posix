@@ -4,7 +4,7 @@ use v6;
 
 =head1 NAME
 
-MQ::Posix - Perl 6 interface for POSIX message queues
+MQ::Posix - Raku interface for POSIX message queues
 
 =head1 SYNOPSIS
 
@@ -62,7 +62,7 @@ running kernel.
 The constructor of the class, C<$name> is the name of the queue and is required,
 there may be different constraints on the name in different implementations but
 in both B<Linux> and B<FreeBSD> it must conform to the requirements of a
-filename.  On or both of C<r> or C<w> must be provided to indicate whether
+filename.  One or both of C<r> or C<w> must be provided to indicate whether
 the queue should be readable, writable or both.  If C<create> is supplied
 the queue will be created if necessary, otherwise if the queue doesn't
 exist an exception will be thrown.  If C<exclusive> is supplied along with
@@ -102,7 +102,7 @@ the queue.
 If the queue is opened for writing this will send the supplied message
 with the specified priority, returning a Promise that will be kept
 when the message is placed on the queue (as it may block if there are
-C<max-messages> alreadt on the queue.) The Promise will be broken with
+C<max-messages> already on the queue.) The Promise will be broken with
 an exception if the queue is not opened for writing or if the message is
 longer than C<message-size>.
 
@@ -388,4 +388,4 @@ class MQ::Posix {
     }
 }
 
-# vim: expandtab shiftwidth=4 ft=perl6
+# vim: expandtab shiftwidth=4 ft=raku

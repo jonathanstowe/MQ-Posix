@@ -1,37 +1,36 @@
 {
-  "name": "MQ::Posix",
-  "version": "0.0.3",
-  "auth": "github:jonathanstowe",
+  "meta-version": "1",
+  "raku": "6.*",
+  "license": "Artistic-2.0",
+  "support": {
+    "bugtracker": "https://github.com/jonathanstowe/MQ-Posix/issues",
+    "source": "https://github.com/jonathanstowe/MQ-Posix.git"
+  },
+  "test-depends": [
+    "Test"
+  ],
   "api": "1.0",
   "description": "binding for POSIX message queues",
-  "source-url": "https://github.com/jonathanstowe/MQ-Posix.git",
-  "support": {
-    "source": "https://github.com/jonathanstowe/MQ-Posix.git",
-    "bugtracker" : "https://github.com/jonathanstowe/MQ-Posix/issues"
-  },
-  "perl": "6.*",
-  "raku": "6.*",
-  "resources": [
+  "depends": [
+    "NativeHelpers::Array"
+  ],
+  "name": "MQ::Posix",
+  "authors": [
+    "Jonathan Stowe <jns+gh@gellyfish.co.uk>"
   ],
   "build-depends": [
   ],
-  "depends": [
-	"NativeHelpers::Array"
+  "version": "0.0.4",
+  "source-url": "https://github.com/jonathanstowe/MQ-Posix.git",
+  "provides": {
+    "MQ::Posix": "lib/MQ/Posix.pm"
+  },
+  "auth": "zef:jonathanstowe",
+  "resources": [
   ],
   "tags": [
-      "posix",
-      "IPC",
-      "MQ"
-  ],
-  "license": "Artistic-2.0",
-  "test-depends": [
-      "Test"
-  ],
-  "provides": {
-      "MQ::Posix" : "lib/MQ/Posix.pm"
-  },
-  "meta-version": "1",
-  "authors": [
-      "Jonathan Stowe <jns+gh@gellyfish.co.uk>"
+    "posix",
+    "IPC",
+    "MQ"
   ]
 }

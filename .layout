@@ -60,7 +60,7 @@
           "children": [
             {
               "type": "file",
-              "name": "Posix.pm"
+              "name": "Posix.rakumod"
             }
           ],
           "purpose": null,

@@ -20,10 +20,10 @@
   ],
   "build-depends": [
   ],
-  "version": "0.0.4",
+  "version": "0.0.5",
   "source-url": "https://github.com/jonathanstowe/MQ-Posix.git",
   "provides": {
-    "MQ::Posix": "lib/MQ/Posix.pm"
+    "MQ::Posix": "lib/MQ/Posix.rakumod"
   },
   "auth": "zef:jonathanstowe",
   "resources": [
